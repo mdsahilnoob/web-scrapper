@@ -8,5 +8,5 @@
 		"noUnusedLocals": false,
 		"lib": ["DOM"]
 	},
-	"include": ["./src/**/*"]
+	"include": ["crawler/src/**/*"]
 }
