@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { saveCrawlMetadata, getCrawlMetadata } from '../storage/crawlMetadata.js';
 import { startCrawl } from '../services/crawlOrchestrator.js';
-import { getResultsByCrawlId, getTechnicalSummary, getPageByUrl } from '../storage/crawlResults.js';
+import { getResultsByCrawlId, getTechnicalSummary, getPageByUrl, getSeoScoreSummary } from '../storage/crawlResults.js';
 
 const router = Router();
 
@@ -455,6 +455,95 @@ router.get('/crawl/:id/speed-summary', (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('Error getting speed summary:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
+router.get('/crawl/:id/seo-score', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const scoreSummary = getSeoScoreSummary(crawlId);
+        
+        if (!scoreSummary) {
+            return res.status(200).json({
+                crawlId,
+                state: metadata.state,
+                message: 'No SEO scores available yet',
+            });
+        }
+        
+        return res.status(200).json({
+            crawlId,
+            state: metadata.state,
+            technicalScore: scoreSummary.averageTechnicalScore,
+            contentScore: scoreSummary.averageContentScore,
+            overallScore: scoreSummary.averageOverallScore,
+            pagesScored: scoreSummary.pagesScored,
+        });
+    } catch (error) {
+        console.error('Error getting SEO score:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
+router.get('/crawl/:id/pages/:url/seo-score', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const pageUrl = decodeURIComponent(req.params.url);
+        
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const page = getPageByUrl(crawlId, pageUrl);
+        
+        if (!page) {
+            return res.status(404).json({
+                error: 'Page not found',
+                crawlId,
+                pageUrl,
+            });
+        }
+        
+        if (!page.seoScoreBreakdown) {
+            return res.status(200).json({
+                crawlId,
+                pageUrl: page.url,
+                message: 'SEO score breakdown not available for this page',
+            });
+        }
+        
+        return res.status(200).json({
+            crawlId,
+            pageUrl: page.url,
+            technicalScore: page.seoScoreBreakdown.technicalScore,
+            contentScore: page.seoScoreBreakdown.contentScore,
+            overallScore: page.seoScoreBreakdown.overallScore,
+            technicalDeductions: page.technicalDeductions || [],
+            contentDeductions: page.contentDeductions || [],
+        });
+    } catch (error) {
+        console.error('Error getting page SEO score:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error instanceof Error ? error.message : 'Unknown error',

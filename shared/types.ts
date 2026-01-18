@@ -40,6 +40,18 @@ export interface PageSpeedMetrics {
     totalLoadTime: number;
 }
 
+export interface SeoScoreBreakdown {
+    technicalScore: number;
+    contentScore: number;
+    overallScore: number;
+}
+
+export interface ScoreDeduction {
+    reason: string;
+    severity: 'error' | 'warning';
+    pointsDeducted: number;
+}
+
 export interface PageMetrics {
     url: string;
     statusCode: number;
@@ -52,6 +64,9 @@ export interface PageMetrics {
     scoreBreakdown: IssueBreakdown[];
     seoMetrics?: PageSeoMetrics;
     speedMetrics?: PageSpeedMetrics;
+    seoScoreBreakdown?: SeoScoreBreakdown;
+    technicalDeductions?: ScoreDeduction[];
+    contentDeductions?: ScoreDeduction[];
 }
 
 export interface CrawlResultItem {

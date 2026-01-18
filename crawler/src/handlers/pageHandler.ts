@@ -5,6 +5,10 @@ import { TechnicalIssue } from '../types/audit.js';
 import { calculateSEOScore, IssueBreakdown } from '../scoring/seo-score.engine.js';
 import { analyzePageSeo, PageSeoMetrics } from '../parsers/page-seo.analyzer.js';
 import { PageSpeedMetrics } from '../types/speed.js';
+import { calculateTechnicalScore } from '../scoring/technical-score.engine.js';
+import { calculateContentScore } from '../scoring/content-score.engine.js';
+import { calculateOverallScore } from '../scoring/overall-score.aggregate.js';
+import { SeoScoreBreakdown, ScoreDeduction } from '../types/score.js';
 
 export interface PageCrawlResult {
     url: string;
@@ -18,6 +22,9 @@ export interface PageCrawlResult {
     scoreBreakdown: IssueBreakdown[];
     seoMetrics?: PageSeoMetrics;
     speedMetrics?: PageSpeedMetrics;
+    seoScoreBreakdown?: SeoScoreBreakdown;
+    technicalDeductions?: ScoreDeduction[];
+    contentDeductions?: ScoreDeduction[];
 }
 
 export async function handlePageMetrics(
@@ -45,6 +52,14 @@ export async function handlePageMetrics(
     const scoreResult = calculateSEOScore(auditResult.issues);
     const seoMetrics = analyzePageSeo($, request.url);
     
+    // Calculate SEO scores
+    const technicalScoreResult = calculateTechnicalScore(auditResult.issues);
+    const contentScoreResult = calculateContentScore(seoMetrics);
+    const overallScoreBreakdown = calculateOverallScore({
+        technicalScore: technicalScoreResult.technicalScore,
+        contentScore: contentScoreResult.contentScore,
+    });
+    
     return {
         url: request.url,
         statusCode,
@@ -56,5 +71,8 @@ export async function handlePageMetrics(
         seoScore: scoreResult.finalScore,
         scoreBreakdown: scoreResult.breakdown,
         seoMetrics,
+        seoScoreBreakdown: overallScoreBreakdown,
+        technicalDeductions: technicalScoreResult.deductions,
+        contentDeductions: contentScoreResult.deductions,
     };
 }

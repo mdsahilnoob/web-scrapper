@@ -11,6 +11,13 @@ export interface SiteSummary {
     warningsCount: number;
 }
 
+export interface SiteSeoScoreSummary {
+    averageTechnicalScore: number;
+    averageContentScore: number;
+    averageOverallScore: number;
+    pagesScored: number;
+}
+
 class CrawlResultsStorage {
     private results: Map<string, StoredPageResult[]> = new Map();
 
@@ -77,6 +84,38 @@ class CrawlResultsStorage {
     getTotalPageCount(crawlId: string): number {
         return this.results.get(crawlId)?.length || 0;
     }
+
+    getSeoScoreSummary(crawlId: string): SiteSeoScoreSummary | null {
+        const pages = this.results.get(crawlId);
+        
+        if (!pages || pages.length === 0) {
+            return null;
+        }
+
+        const pagesWithScores = pages.filter(page => page.seoScoreBreakdown);
+        
+        if (pagesWithScores.length === 0) {
+            return null;
+        }
+
+        const sum = pagesWithScores.reduce(
+            (acc, page) => ({
+                technical: acc.technical + (page.seoScoreBreakdown?.technicalScore || 0),
+                content: acc.content + (page.seoScoreBreakdown?.contentScore || 0),
+                overall: acc.overall + (page.seoScoreBreakdown?.overallScore || 0),
+            }),
+            { technical: 0, content: 0, overall: 0 }
+        );
+
+        const count = pagesWithScores.length;
+
+        return {
+            averageTechnicalScore: Math.round(sum.technical / count),
+            averageContentScore: Math.round(sum.content / count),
+            averageOverallScore: Math.round(sum.overall / count),
+            pagesScored: count,
+        };
+    }
 }
 
 const storage = new CrawlResultsStorage();
@@ -103,4 +142,8 @@ export function clearResults(crawlId: string): void {
 
 export function getTotalPageCount(crawlId: string): number {
     return storage.getTotalPageCount(crawlId);
+}
+
+export function getSeoScoreSummary(crawlId: string): SiteSeoScoreSummary | null {
+    return storage.getSeoScoreSummary(crawlId);
 }
