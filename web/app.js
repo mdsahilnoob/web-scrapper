@@ -2,7 +2,6 @@ const API_BASE = 'http://localhost:3000/api';
 let currentCrawlId = null;
 let statusInterval = null;
 
-// DOM Elements
 const crawlForm = document.getElementById('crawlForm');
 const statusSection = document.getElementById('statusSection');
 const scoresSection = document.getElementById('scoresSection');
@@ -11,7 +10,6 @@ const refreshBtn = document.getElementById('refreshBtn');
 const modal = document.getElementById('modal');
 const closeModal = document.querySelector('.close');
 
-// Form Submit
 crawlForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -40,7 +38,6 @@ crawlForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Refresh Status Button
 refreshBtn.addEventListener('click', () => {
     if (currentCrawlId) {
         fetchStatus();
@@ -49,14 +46,12 @@ refreshBtn.addEventListener('click', () => {
     }
 });
 
-// Show Status Section
 function showStatus() {
     statusSection.classList.remove('hidden');
     scoresSection.classList.remove('hidden');
     pagesSection.classList.remove('hidden');
 }
 
-// Poll Status Every 2 Seconds
 function startStatusPolling() {
     fetchStatus();
     fetchScores();
@@ -75,7 +70,6 @@ function startStatusPolling() {
     }, 2000);
 }
 
-// Fetch Crawl Status
 async function fetchStatus() {
     try {
         const response = await fetch(`${API_BASE}/crawl/${currentCrawlId}/status`);
@@ -95,7 +89,6 @@ async function fetchStatus() {
     return null;
 }
 
-// Fetch SEO Scores
 async function fetchScores() {
     try {
         const response = await fetch(`${API_BASE}/crawl/${currentCrawlId}/seo-score`);
@@ -106,7 +99,6 @@ async function fetchScores() {
             document.getElementById('contentScore').textContent = data.contentScore;
             document.getElementById('overallScore').textContent = data.overallScore;
             
-            // Color coding
             setScoreColor('technicalScore', data.technicalScore);
             setScoreColor('contentScore', data.contentScore);
             setScoreColor('overallScore', data.overallScore);
@@ -116,7 +108,6 @@ async function fetchScores() {
     }
 }
 
-// Set Score Color Based on Value
 function setScoreColor(elementId, score) {
     const element = document.getElementById(elementId);
     element.className = 'score-value';
@@ -130,7 +121,6 @@ function setScoreColor(elementId, score) {
     }
 }
 
-// Fetch Crawled Pages
 async function fetchPages() {
     try {
         const response = await fetch(`${API_BASE}/crawl/${currentCrawlId}/pages`);
@@ -144,7 +134,6 @@ async function fetchPages() {
     }
 }
 
-// Render Pages Table
 function renderPagesTable(pages) {
     const tbody = document.getElementById('pagesTableBody');
     tbody.innerHTML = '';
@@ -171,7 +160,6 @@ function renderPagesTable(pages) {
         overallCell.textContent = '-';
         overallCell.className = 'score-cell';
         
-        // Fetch individual page scores
         fetchPageScore(page.url, techCell, contentCell, overallCell);
         
         const actionsCell = document.createElement('td');
@@ -192,7 +180,6 @@ function renderPagesTable(pages) {
     });
 }
 
-// Fetch Individual Page Score
 async function fetchPageScore(pageUrl, techCell, contentCell, overallCell) {
     try {
         const encodedUrl = encodeURIComponent(pageUrl);
@@ -213,7 +200,6 @@ async function fetchPageScore(pageUrl, techCell, contentCell, overallCell) {
     }
 }
 
-// Set Score Cell Color
 function setScoreCellColor(cell, score) {
     if (score >= 80) {
         cell.style.color = '#22c55e';
@@ -227,7 +213,6 @@ function setScoreCellColor(cell, score) {
     }
 }
 
-// Show Page Details Modal
 async function showPageDetails(pageUrl) {
     const encodedUrl = encodeURIComponent(pageUrl);
     
@@ -311,20 +296,17 @@ async function showPageDetails(pageUrl) {
     }
 }
 
-// Helper: Get Score Color
 function getScoreColor(score) {
     if (score >= 80) return '#22c55e';
     if (score >= 60) return '#f59e0b';
     return '#ef4444';
 }
 
-// Helper: Truncate URL
 function truncateUrl(url, maxLength = 40) {
     if (url.length <= maxLength) return url;
     return url.substring(0, maxLength) + '...';
 }
 
-// Close Modal
 closeModal.addEventListener('click', () => {
     modal.classList.add('hidden');
 });
