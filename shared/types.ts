@@ -33,6 +33,13 @@ export interface PageSeoMetrics {
     internalLinkCount: number;
 }
 
+export interface PageSpeedMetrics {
+    url: string;
+    ttfb: number;
+    domLoadTime: number;
+    totalLoadTime: number;
+}
+
 export interface PageMetrics {
     url: string;
     statusCode: number;
@@ -44,6 +51,7 @@ export interface PageMetrics {
     seoScore: number;
     scoreBreakdown: IssueBreakdown[];
     seoMetrics?: PageSeoMetrics;
+    speedMetrics?: PageSpeedMetrics;
 }
 
 export interface CrawlResultItem {

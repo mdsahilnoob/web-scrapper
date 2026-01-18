@@ -4,12 +4,16 @@ import { isInternalUrl } from './utils/urlHelpers.js';
 import { handlePageMetrics, PageCrawlResult } from './handlers/pageHandler.js';
 import { shouldUsePlaywrightFallback, crawlWithPlaywright } from './fetchers/playwrightFallback.js';
 import { CrawlerOptions, CrawlResultItem, PageMetrics } from '../../shared/types.js';
+import { resetSpeedMeasurementCount, setSpeedConfig } from './config/speed-limits.js';
 
 export async function runSiteCrawler(
     options: CrawlerOptions,
     onPageCrawled?: (metrics: PageMetrics) => void
 ): Promise<CrawlResultItem[]> {
     const { startUrl, maxDepth = 2, maxPages = 50, crawlId = randomUUID() } = options;
+    
+    // Reset speed measurement counter for new crawl
+    resetSpeedMeasurementCount();
     
     const results: CrawlResultItem[] = [];
     const requestQueue = await RequestQueue.open();

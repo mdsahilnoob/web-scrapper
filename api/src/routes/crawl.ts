@@ -350,4 +350,116 @@ router.get('/crawl/:id/seo-metrics-summary', (req: Request, res: Response) => {
     }
 });
 
+router.get('/crawl/:id/pages/:url/speed', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const pageUrl = decodeURIComponent(req.params.url);
+        
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const page = getPageByUrl(crawlId, pageUrl);
+        
+        if (!page) {
+            return res.status(404).json({
+                error: 'Page not found',
+                crawlId,
+                pageUrl,
+            });
+        }
+        
+        if (!page.speedMetrics) {
+            return res.status(200).json({
+                crawlId,
+                pageUrl: page.url,
+                message: 'Speed metrics not available for this page',
+            });
+        }
+        
+        return res.status(200).json({
+            crawlId,
+            pageUrl: page.url,
+            ttfb: page.speedMetrics.ttfb,
+            domLoadTime: page.speedMetrics.domLoadTime,
+            totalLoadTime: page.speedMetrics.totalLoadTime,
+        });
+    } catch (error) {
+        console.error('Error getting page speed metrics:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
+router.get('/crawl/:id/speed-summary', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const pages = getResultsByCrawlId(crawlId);
+        
+        if (pages.length === 0) {
+            return res.status(200).json({
+                crawlId,
+                state: metadata.state,
+                message: 'No results available yet',
+                totalPages: 0,
+            });
+        }
+        
+        const pagesWithSpeed = pages.filter(page => page.speedMetrics);
+        
+        if (pagesWithSpeed.length === 0) {
+            return res.status(200).json({
+                crawlId,
+                state: metadata.state,
+                message: 'No speed metrics available yet',
+                totalPages: pages.length,
+                pagesWithSpeedData: 0,
+            });
+        }
+        
+        const sum = pagesWithSpeed.reduce((acc, page) => {
+            const metrics = page.speedMetrics!;
+            return {
+                ttfb: acc.ttfb + metrics.ttfb,
+                domLoadTime: acc.domLoadTime + metrics.domLoadTime,
+                totalLoadTime: acc.totalLoadTime + metrics.totalLoadTime,
+            };
+        }, { ttfb: 0, domLoadTime: 0, totalLoadTime: 0 });
+        
+        const count = pagesWithSpeed.length;
+        
+        return res.status(200).json({
+            crawlId,
+            state: metadata.state,
+            totalPages: pages.length,
+            pagesWithSpeedData: count,
+            averageTtfb: Math.round(sum.ttfb / count),
+            averageDomLoadTime: Math.round(sum.domLoadTime / count),
+            averageTotalLoadTime: Math.round(sum.totalLoadTime / count),
+        });
+    } catch (error) {
+        console.error('Error getting speed summary:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
 export default router;

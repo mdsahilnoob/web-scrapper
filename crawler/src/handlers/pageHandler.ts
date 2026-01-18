@@ -4,6 +4,7 @@ import { TechnicalAuditRunner, AuditInputs } from '../audits/TechnicalAuditRunne
 import { TechnicalIssue } from '../types/audit.js';
 import { calculateSEOScore, IssueBreakdown } from '../scoring/seo-score.engine.js';
 import { analyzePageSeo, PageSeoMetrics } from '../parsers/page-seo.analyzer.js';
+import { PageSpeedMetrics } from '../types/speed.js';
 
 export interface PageCrawlResult {
     url: string;
@@ -16,6 +17,7 @@ export interface PageCrawlResult {
     seoScore: number;
     scoreBreakdown: IssueBreakdown[];
     seoMetrics?: PageSeoMetrics;
+    speedMetrics?: PageSpeedMetrics;
 }
 
 export async function handlePageMetrics(
