@@ -18,6 +18,21 @@ export interface IssueBreakdown {
     pointsDeducted: number;
 }
 
+export interface PageSeoMetrics {
+    titleLength: number;
+    metaDescriptionLength: number;
+    h1Count: number;
+    h2Count: number;
+    h3Count: number;
+    h4Count: number;
+    h5Count: number;
+    h6Count: number;
+    wordCount: number;
+    imagesWithAlt: number;
+    imagesWithoutAlt: number;
+    internalLinkCount: number;
+}
+
 export interface PageMetrics {
     url: string;
     statusCode: number;
@@ -28,6 +43,7 @@ export interface PageMetrics {
     auditIssues: TechnicalIssue[];
     seoScore: number;
     scoreBreakdown: IssueBreakdown[];
+    seoMetrics?: PageSeoMetrics;
 }
 
 export interface CrawlResultItem {

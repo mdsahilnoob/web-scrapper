@@ -3,6 +3,7 @@ import { isIndexable } from '../audits/indexability.js';
 import { TechnicalAuditRunner, AuditInputs } from '../audits/TechnicalAuditRunner.js';
 import { TechnicalIssue } from '../types/audit.js';
 import { calculateSEOScore, IssueBreakdown } from '../scoring/seo-score.engine.js';
+import { analyzePageSeo, PageSeoMetrics } from '../parsers/page-seo.analyzer.js';
 
 export interface PageCrawlResult {
     url: string;
@@ -14,6 +15,7 @@ export interface PageCrawlResult {
     auditIssues: TechnicalIssue[];
     seoScore: number;
     scoreBreakdown: IssueBreakdown[];
+    seoMetrics?: PageSeoMetrics;
 }
 
 export async function handlePageMetrics(
@@ -39,6 +41,7 @@ export async function handlePageMetrics(
     
     const auditResult = await auditRunner.runAllAudits(auditInputs);
     const scoreResult = calculateSEOScore(auditResult.issues);
+    const seoMetrics = analyzePageSeo($, request.url);
     
     return {
         url: request.url,
@@ -50,5 +53,6 @@ export async function handlePageMetrics(
         auditIssues: auditResult.issues,
         seoScore: scoreResult.finalScore,
         scoreBreakdown: scoreResult.breakdown,
+        seoMetrics,
     };
 }
