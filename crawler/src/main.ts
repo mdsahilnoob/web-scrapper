@@ -1,4 +1,4 @@
-import { CheerioCrawler, RequestQueue, SessionPool } from 'crawlee';
+import { CheerioCrawler, RequestQueue } from 'crawlee';
 import { randomUUID } from 'crypto';
 import { isInternalUrl } from './utils/urlHelpers.js';
 import { handlePageMetrics, PageCrawlResult } from './handlers/pageHandler.js';
@@ -23,11 +23,8 @@ export async function runSiteCrawler(
         userData: { depth: 0 },
     });
     
-    const sessionPool = await SessionPool.open();
-    
     const crawler = new CheerioCrawler({
         requestQueue,
-        sessionPool,
         maxRequestsPerCrawl: maxPages,
         useSessionPool: true,
         persistCookiesPerSession: true,

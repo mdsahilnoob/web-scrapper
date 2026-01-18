@@ -36,9 +36,12 @@ export function startCrawl(
             });
         } catch (error) {
             console.error(`Crawl ${crawlId} failed:`, error);
+            console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+            
+            const errorMessage = error instanceof Error ? `${error.message}\n${error.stack}` : 'Unknown error';
             
             updateCrawlState(crawlId, 'failed', {
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: errorMessage,
                 completedAt: new Date().toISOString(),
             });
         }

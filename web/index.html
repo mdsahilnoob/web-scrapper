@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper - SEO Analysis Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕷️ Web Scraper SEO Analysis</h1>
+            <p class="subtitle">Crawl websites and analyze SEO metrics</p>
+        </header>
+
+        <!-- Crawl Form -->
+        <section class="card">
+            <h2>Start New Crawl</h2>
+            <form id="crawlForm">
+                <div class="form-group">
+                    <label for="url">Website URL:</label>
+                    <input type="url" id="url" placeholder="https://example.com" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="maxDepth">Max Depth:</label>
+                        <input type="number" id="maxDepth" value="2" min="1" max="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxPages">Max Pages:</label>
+                        <input type="number" id="maxPages" value="10" min="1" max="100">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Start Crawl</button>
+            </form>
+        </section>
+
+        <!-- Status Display -->
+        <section id="statusSection" class="card hidden">
+            <h2>Crawl Status</h2>
+            <div id="statusContent">
+                <p><strong>Crawl ID:</strong> <span id="crawlId">-</span></p>
+                <p><strong>State:</strong> <span id="crawlState" class="badge">-</span></p>
+                <p><strong>Pages Crawled:</strong> <span id="pagesCrawled">-</span></p>
+                <p><strong>Started:</strong> <span id="startedAt">-</span></p>
+            </div>
+            <button id="refreshBtn" class="btn btn-secondary">Refresh Status</button>
+        </section>
+
+        <!-- SEO Scores -->
+        <section id="scoresSection" class="card hidden">
+            <h2>SEO Scores</h2>
+            <div class="scores-grid">
+                <div class="score-card">
+                    <div class="score-label">Technical SEO</div>
+                    <div class="score-value" id="technicalScore">-</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Content SEO</div>
+                    <div class="score-value" id="contentScore">-</div>
+                </div>
+                <div class="score-card">
+                    <div class="score-label">Overall Score</div>
+                    <div class="score-value" id="overallScore">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pages List -->
+        <section id="pagesSection" class="card hidden">
+            <h2>Crawled Pages</h2>
+            <div id="pagesContent">
+                <table id="pagesTable">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>Technical</th>
+                            <th>Content</th>
+                            <th>Overall</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pagesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Page Details Modal -->
+        <!-- <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle">Page Details</h2>
+                <div id="modalBody">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
