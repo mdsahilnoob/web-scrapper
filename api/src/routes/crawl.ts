@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { saveCrawlMetadata, getCrawlMetadata } from '../storage/crawlMetadata.js';
 import { startCrawl } from '../services/crawlOrchestrator.js';
-import { getResultsByCrawlId } from '../storage/crawlResults.js';
+import { getResultsByCrawlId, getTechnicalSummary, getPageByUrl } from '../storage/crawlResults.js';
 
 const router = Router();
 
@@ -118,6 +118,91 @@ router.get('/crawl/:id/pages', (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error('Error getting crawl pages:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
+router.get('/crawl/:id/technical-summary', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const summary = getTechnicalSummary(crawlId);
+        
+        if (!summary) {
+            return res.status(200).json({
+                crawlId,
+                state: metadata.state,
+                message: 'No results available yet',
+                siteScore: 0,
+                totalIssues: 0,
+                errorsCount: 0,
+                warningsCount: 0,
+            });
+        }
+        
+        return res.status(200).json({
+            crawlId,
+            state: metadata.state,
+            siteScore: summary.siteScore,
+            totalIssues: summary.totalIssues,
+            errorsCount: summary.errorsCount,
+            warningsCount: summary.warningsCount,
+        });
+    } catch (error) {
+        console.error('Error getting technical summary:', error);
+        return res.status(500).json({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+});
+
+router.get('/crawl/:id/pages/:url/audit', (req: Request, res: Response) => {
+    try {
+        const crawlId = req.params.id;
+        const pageUrl = decodeURIComponent(req.params.url);
+        
+        const metadata = getCrawlMetadata(crawlId);
+        
+        if (!metadata) {
+            return res.status(404).json({
+                error: 'Crawl not found',
+                crawlId,
+            });
+        }
+        
+        const page = getPageByUrl(crawlId, pageUrl);
+        
+        if (!page) {
+            return res.status(404).json({
+                error: 'Page not found',
+                crawlId,
+                pageUrl,
+            });
+        }
+        
+        return res.status(200).json({
+            crawlId,
+            pageUrl: page.url,
+            seoScore: page.seoScore,
+            issues: page.auditIssues,
+            scoreBreakdown: page.scoreBreakdown,
+            statusCode: page.statusCode,
+            indexable: page.indexable,
+        });
+    } catch (error) {
+        console.error('Error getting page audit:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error instanceof Error ? error.message : 'Unknown error',

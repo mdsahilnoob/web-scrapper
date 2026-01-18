@@ -5,6 +5,19 @@ export interface CrawlerOptions {
     crawlId?: string;
 }
 
+export interface TechnicalIssue {
+    code: string;
+    severity: 'error' | 'warning';
+    message: string;
+    pageUrl: string;
+}
+
+export interface IssueBreakdown {
+    code: string;
+    count: number;
+    pointsDeducted: number;
+}
+
 export interface PageMetrics {
     url: string;
     statusCode: number;
@@ -12,6 +25,9 @@ export interface PageMetrics {
     loadTime: number;
     crawledTimestamp: string;
     indexable: boolean;
+    auditIssues: TechnicalIssue[];
+    seoScore: number;
+    scoreBreakdown: IssueBreakdown[];
 }
 
 export interface CrawlResultItem {

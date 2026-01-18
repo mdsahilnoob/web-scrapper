@@ -1,7 +1,14 @@
-import { PageMetrics } from '../../../shared/types.js';
+import { PageMetrics, TechnicalIssue } from '../../../shared/types.js';
 
 interface StoredPageResult extends PageMetrics {
     crawlId: string;
+}
+
+export interface SiteSummary {
+    siteScore: number;
+    totalIssues: number;
+    errorsCount: number;
+    warningsCount: number;
 }
 
 class CrawlResultsStorage {
@@ -23,6 +30,46 @@ class CrawlResultsStorage {
         return this.results.get(crawlId) || [];
     }
 
+    getPageByUrl(crawlId: string, pageUrl: string): PageMetrics | undefined {
+        const pages = this.results.get(crawlId) || [];
+        return pages.find(page => page.url === pageUrl);
+    }
+
+    getTechnicalSummary(crawlId: string): SiteSummary | null {
+        const pages = this.results.get(crawlId);
+        
+        if (!pages || pages.length === 0) {
+            return null;
+        }
+
+        let totalScore = 0;
+        let totalIssues = 0;
+        let errorsCount = 0;
+        let warningsCount = 0;
+
+        for (const page of pages) {
+            totalScore += page.seoScore;
+            totalIssues += page.auditIssues.length;
+
+            for (const issue of page.auditIssues) {
+                if (issue.severity === 'error') {
+                    errorsCount++;
+                } else if (issue.severity === 'warning') {
+                    warningsCount++;
+                }
+            }
+        }
+
+        const siteScore = Math.round(totalScore / pages.length);
+
+        return {
+            siteScore,
+            totalIssues,
+            errorsCount,
+            warningsCount,
+        };
+    }
+
     clearResults(crawlId: string): void {
         this.results.delete(crawlId);
     }
@@ -40,6 +87,14 @@ export function savePageResult(result: PageMetrics, crawlId: string): void {
 
 export function getResultsByCrawlId(crawlId: string): PageMetrics[] {
     return storage.getResultsByCrawlId(crawlId);
+}
+
+export function getPageByUrl(crawlId: string, pageUrl: string): PageMetrics | undefined {
+    return storage.getPageByUrl(crawlId, pageUrl);
+}
+
+export function getTechnicalSummary(crawlId: string): SiteSummary | null {
+    return storage.getTechnicalSummary(crawlId);
 }
 
 export function clearResults(crawlId: string): void {
